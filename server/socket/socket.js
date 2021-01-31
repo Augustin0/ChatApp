@@ -15,8 +15,7 @@ io.on("connection", (user) => {
             user.join(sala_user)
             users = usuarioManager.addNewUser({ id: user.id, ...data });
             calback(null, users, usuarioManager.getUser(user.id))
-
-            user.broadcast.to(sala_user).emit("newUser_>", null, users, usuarioManager.getUser(user.id))
+            user.broadcast.to(sala_user).emit("newUser_>", null, users, usuarioManager.getUser(user.id), formatMessage("Administrador", `${data.nombre} se ha unido al chat`))
 
         }
     })
@@ -26,10 +25,9 @@ io.on("connection", (user) => {
         let message = '';
         if (usuario) {
             message = formatMessage(usuario.nombre, message_Q);
+            user.broadcast.to(sala_user).emit("message_>", message)
             calback(message)
         }
-        user.broadcast.to(sala_user).emit("message_>", message)
-
     });
     user.on("message_uno_a_uno", (data, calback) => {
         let message = formatMessage(data.nombreEmisor, data.messageSend);
@@ -41,9 +39,9 @@ io.on("connection", (user) => {
     user.on("disconnect", () => {
         let usuario = usuarioManager.borrarPersona(user.id)
         if (usuario) {
-            user.broadcast.to(sala_user).emit("usuarioFuera", { message: `${usuario.nombre} no esta en la sala principal`, users: usuarioManager.getAllUsers(sala_user) });
+            user.broadcast.to(sala_user).emit("usuarioFuera", { users: usuarioManager.getAllUsers(sala_user) }, formatMessage("Administrador", `${usuario.nombre} salio del chat`));
 
-            user.broadcast.to(sala_user).emit("newUser_>", null, users, usuarioManager.getUser(user.id))
+            // user.broadcast.to(sala_user).emit("newUser_>", null, users, usuarioManager.getUser(user.id))
         }
 
     });
